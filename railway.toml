@@ -10,21 +10,16 @@
 #   2. 首次部署後：用 Railway Web Terminal（或 railway run bash）執行
 #        hermes auth add xai-oauth
 #      會印出網址 + 裝置碼，在瀏覽器用有 SuperGrok 訂閱的 X 帳號完成登入
-#   3. 內網連線：bot 使用 http://hermes.railway.internal:8645/v1
+#   3. 內網連線：bot 使用 http://<服務名稱>.railway.internal:8645/v1
 #      （Railway 同專案服務之間可用 private networking，不需公開網域）
 #   4. 若需要公開網域才開（不建議，proxy 對任何 bearer 都放行）
-#
-# 注意：必須用 Dockerfile.railway（去掉 Docker VOLUME 指令）。
-# Railway 不支援 Dockerfile 內的 VOLUME，否則 build 會失敗：
-#   "docker VOLUME ... is not supported, use Railway Volumes"
 
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile.railway"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "proxy start --provider xai --host 0.0.0.0"
-healthcheckPath = "/health"
-healthcheckTimeout = 120
+# 注意：healthcheckPath 需要公開網域才能運作；本服務只用內網，故不設 healthcheck
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
