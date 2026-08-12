@@ -1,5 +1,12 @@
 # Railway 部署設定 — Hermes Agent（OpenAI 相容 proxy 模式）
 #
+# 用途：在 Railway 上跑 hermes proxy，讓 bot 透過內網用 SuperGrok 訂閱模型。
+#
+# 手動步驟（完成後）：
+#   1. Volume /opt/data 已掛載（HERMES_HOME）
+#   2. auth.json 已寫入 volume（xai-oauth）
+#   3. bot base URL：http://hermes.railway.internal:8645/v1
+#
 # 必須用 Dockerfile.railway（去掉 Docker VOLUME）。
 
 [build]
@@ -7,7 +14,6 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.railway"
 
 [deploy]
-# TEMP: keep container alive for auth bootstrap; will restore proxy after auth.json is written
-startCommand = "sh -c 'sleep infinity'"
+startCommand = "sh -c 'exec hermes proxy start --provider xai --host 0.0.0.0 --port ${PORT:-8645}'"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
