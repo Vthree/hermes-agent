@@ -1,27 +1,13 @@
 # Railway 部署設定 — Hermes Agent（OpenAI 相容 proxy 模式）
 #
-# 用途：在 Railway 上跑 `hermes proxy`，讓 telegram-grok-bot / discord-grok-bot
-#       透過 Railway 內網使用 SuperGrok 訂閱模型（grok-4.5），Hermes 離線時
-#       bot 再 fallback 回 API。
-#
-# Railway 儀表板手動設定（railway.toml 無法涵蓋的部分）：
-#   1. 服務 → Settings → Volumes → 新增 volume（建議 ≥1GB）掛載在 /opt/data
-#      （= HERMES_HOME，auth.json 存這裡，重啟/重新部署才不會掉登入）
-#   2. 首次部署後：用 Railway Web Terminal 執行
-#        hermes auth add xai-oauth
-#      會印出網址 + 裝置碼，在瀏覽器用有 SuperGrok 訂閱的 X 帳號完成登入
-#   3. 內網連線：bot 使用 http://hermes.railway.internal:$PORT/v1
-#      （同專案 private networking；proxy 不建議公開）
-#
 # 必須用 Dockerfile.railway（去掉 Docker VOLUME）。
-# Railway 不支援 Dockerfile 內的 VOLUME。
 
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.railway"
 
 [deploy]
-# $PORT 由 Railway 注入；proxy 綁 0.0.0.0 讓內網可連
-startCommand = "sh -c 'exec hermes proxy start --provider xai --host 0.0.0.0 --port ${PORT:-8645}'"
+# TEMP: keep container alive for auth bootstrap; will restore proxy after auth.json is written
+startCommand = "sh -c 'sleep infinity'"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
